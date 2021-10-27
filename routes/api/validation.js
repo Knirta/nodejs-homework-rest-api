@@ -18,11 +18,11 @@ const schemaContact = Joi.object({
     .email({ tlds: { allow: false } })
     .required(),
   phone: Joi.string().pattern(new RegExp(patternPhone)).required(),
-  isFavorite: Joi.boolean().optional(),
+  favorite: Joi.boolean().optional(),
 });
 
 const schemaStatusContact = Joi.object({
-  isFavorite: Joi.boolean().required(),
+  favorite: Joi.boolean().required(),
 });
 
 const validate = async (schema, obj, res, next) => {
