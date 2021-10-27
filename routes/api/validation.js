@@ -1,19 +1,28 @@
 const Joi = require("joi");
-
-const patternId = "^[A-Za-z0-9_]+$";
+Joi.objectId = require("joi-objectid")(Joi);
+const { validContactInfo } = require("../../config/constant");
 
 const schemaId = Joi.object({
-  contactId: Joi.string().pattern(new RegExp(patternId)).length(21).required(),
+  contactId: Joi.objectId().required(),
 });
 
 const patternPhone = "\\(\\d{3}\\) \\d{3}-\\d{4}";
 
 const schemaContact = Joi.object({
-  name: Joi.string().alphanum().min(1).max(20).required(),
+  name: Joi.string()
+    .alphanum()
+    .min(validContactInfo.MIN_NAME_LENGTH)
+    .max(validContactInfo.MAX_NAME_LENGTH)
+    .required(),
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required(),
   phone: Joi.string().pattern(new RegExp(patternPhone)).required(),
+  isFavorite: Joi.boolean().optional(),
+});
+
+const schemaStatusContact = Joi.object({
+  isFavorite: Joi.boolean().required(),
 });
 
 const validate = async (schema, obj, res, next) => {
@@ -35,4 +44,8 @@ module.exports.validateId = async (req, res, next) => {
 
 module.exports.validateContact = async (req, res, next) => {
   return await validate(schemaContact, req.body, res, next);
+};
+
+module.exports.validateStatusContact = async (req, res, next) => {
+  return await validate(schemaStatusContact, req.body, res, next);
 };
