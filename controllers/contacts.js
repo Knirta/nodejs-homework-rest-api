@@ -1,8 +1,8 @@
-const Contact = require("../repository");
+const Contacts = require("../repository/contacts");
 
 const getContacts = async (req, res, next) => {
   try {
-    const contacts = await Contact.listContacts();
+    const contacts = await Contacts.listContacts();
     res.status(200).json({ status: "success", code: 200, data: { contacts } });
   } catch (err) {
     next(err);
@@ -12,7 +12,7 @@ const getContacts = async (req, res, next) => {
 const getContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await Contact.getContactById(contactId);
+    const contact = await Contacts.getContactById(contactId);
     if (contact) {
       return res
         .status(200)
@@ -28,7 +28,7 @@ const getContact = async (req, res, next) => {
 
 const saveContact = async (req, res, next) => {
   try {
-    const newContact = await Contact.addContact(req.body);
+    const newContact = await Contacts.addContact(req.body);
     res
       .status(201)
       .json({ status: "success", code: 201, data: { newContact } });
@@ -40,7 +40,7 @@ const saveContact = async (req, res, next) => {
 const removeContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await Contact.removeContact(contactId);
+    const contact = await Contacts.removeContact(contactId);
     if (contact) {
       return res.status(200).json({
         status: "success",
@@ -59,7 +59,7 @@ const removeContact = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await Contact.updateContact(contactId, req.body);
+    const contact = await Contacts.updateContact(contactId, req.body);
     if (contact) {
       return res
         .status(200)
@@ -76,7 +76,7 @@ const updateContact = async (req, res, next) => {
 const updateStatusFavoriteContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await Contact.updateContact(contactId, req.body);
+    const contact = await Contacts.updateContact(contactId, req.body);
     if (contact) {
       return res
         .status(200)

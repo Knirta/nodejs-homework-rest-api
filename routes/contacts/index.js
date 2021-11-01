@@ -1,5 +1,7 @@
 const express = require("express");
 
+const guard = require("../../helpers/guard");
+
 const {
   validateId,
   validateContact,
@@ -17,18 +19,19 @@ const {
 
 const router = express.Router();
 
-router.get("/", getContacts);
+router.get("/", guard, getContacts);
 
-router.get("/:contactId", validateId, getContact);
+router.get("/:contactId", guard, validateId, getContact);
 
-router.post("/", validateContact, saveContact);
+router.post("/", guard, validateContact, saveContact);
 
-router.delete("/:contactId", validateId, removeContact);
+router.delete("/:contactId", guard, validateId, removeContact);
 
-router.put("/:contactId", [validateId, validateContact], updateContact);
+router.put("/:contactId", guard, [validateId, validateContact], updateContact);
 
 router.patch(
   "/:contactId/favorite",
+  guard,
   [validateId, validateStatusContact],
   updateStatusFavoriteContact
 );
