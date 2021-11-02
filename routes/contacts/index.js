@@ -8,6 +8,8 @@ const {
   validateStatusContact,
 } = require("./validation");
 
+const wrapError = require("../../helpers/error-handler");
+
 const {
   getContact,
   getContacts,
@@ -17,23 +19,40 @@ const {
   updateStatusFavoriteContact,
 } = require("../../controllers/contacts");
 
+const role = require("../../helpers/role");
+const { subscription } = require("../../config/constant");
+
 const router = express.Router();
 
-router.get("/", guard, getContacts);
+router.get("/", guard, wrapError(getContacts));
 
-router.get("/:contactId", guard, validateId, getContact);
+router.get(
+  "/business",
+  guard,
+  role(subscription.BUSINESS),
+  wrapError((req, res, next) =>
+    res.json({ status: "success", code: 200, message: "Only for business" })
+  )
+);
 
-router.post("/", guard, validateContact, saveContact);
+router.get("/:contactId", guard, validateId, wrapError(getContact));
 
-router.delete("/:contactId", guard, validateId, removeContact);
+router.post("/", guard, validateContact, wrapError(saveContact));
 
-router.put("/:contactId", guard, [validateId, validateContact], updateContact);
+router.delete("/:contactId", guard, validateId, wrapError(removeContact));
+
+router.put(
+  "/:contactId",
+  guard,
+  [validateId, validateContact],
+  wrapError(updateContact)
+);
 
 router.patch(
   "/:contactId/favorite",
   guard,
   [validateId, validateStatusContact],
-  updateStatusFavoriteContact
+  wrapError(updateStatusFavoriteContact)
 );
 
 module.exports = router;

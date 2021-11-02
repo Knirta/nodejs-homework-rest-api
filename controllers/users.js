@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Users = require("../repository/users");
 const { httpCode } = require("../config/constant");
+const { CustomError } = require("../helpers/custom-error");
 require("dotenv").config();
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -27,7 +28,6 @@ const registration = async (req, res, next) => {
       },
     });
   } catch (err) {
-    console.error("error", err);
     next(err);
   }
 };
@@ -62,8 +62,32 @@ const logout = async (req, res, next) => {
   return res.status(httpCode.NO_CONTENT).json({});
 };
 
+const getCurrent = async (req, res, next) => {
+  const { email, subscription, createdAt, updatedAt } = req.user;
+  return res.status(httpCode.OK).json({
+    status: "success",
+    code: httpCode.OK,
+    data: {
+      user: { email, subscription, createdAt, updatedAt },
+    },
+  });
+};
+
+const updateSubscription = async (req, res, next) => {
+  const id = req.user._id;
+  const user = await Users.updateSubscription(id, req.body);
+  if (user) {
+    return res
+      .status(httpCode.OK)
+      .json({ status: "success", code: httpCode.OK, data: { user } });
+  }
+  throw new CustomError(404, "Not found");
+};
+
 module.exports = {
   registration,
   login,
   logout,
+  getCurrent,
+  updateSubscription,
 };
