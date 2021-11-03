@@ -1,93 +1,76 @@
-const Contact = require("../repository");
+const Contacts = require("../repository/contacts");
+const { httpCode } = require("../config/constant");
+const { CustomError } = require("../helpers/custom-error");
 
-const getContacts = async (req, res, next) => {
-  try {
-    const contacts = await Contact.listContacts();
-    res.status(200).json({ status: "success", code: 200, data: { contacts } });
-  } catch (err) {
-    next(err);
-  }
+const getContacts = async (req, res) => {
+  const userId = req.user._id;
+  const data = await Contacts.listContacts(userId, req.query);
+  res
+    .status(httpCode.OK)
+    .json({ status: "success", code: httpCode.OK, data: { ...data } });
 };
 
-const getContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const contact = await Contact.getContactById(contactId);
-    if (contact) {
-      return res
-        .status(200)
-        .json({ status: "success", code: 200, data: { contact } });
-    }
+const getContact = async (req, res) => {
+  const { contactId } = req.params;
+  const userId = req.user._id;
+  const contact = await Contacts.getContactById(contactId, userId);
+  if (contact) {
     return res
-      .status(404)
-      .json({ status: "error", code: 404, message: "Not found" });
-  } catch (err) {
-    next(err);
+      .status(httpCode.OK)
+      .json({ status: "success", code: httpCode.OK, data: { contact } });
   }
+  throw new CustomError(404, "Not found");
 };
 
-const saveContact = async (req, res, next) => {
-  try {
-    const newContact = await Contact.addContact(req.body);
-    res
-      .status(201)
-      .json({ status: "success", code: 201, data: { newContact } });
-  } catch (err) {
-    next(err);
-  }
+const saveContact = async (req, res) => {
+  const userId = req.user._id;
+  const newContact = await Contacts.addContact({
+    ...req.body,
+    owner: userId,
+  });
+  res.status(httpCode.CREATED).json({
+    status: "success",
+    code: httpCode.CREATED,
+    data: { newContact },
+  });
 };
 
-const removeContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const contact = await Contact.removeContact(contactId);
-    if (contact) {
-      return res.status(200).json({
-        status: "success",
-        code: 200,
-        message: { message: "Contact deleted", contact },
-      });
-    }
+const removeContact = async (req, res) => {
+  const { contactId } = req.params;
+  const userId = req.user._id;
+  const contact = await Contacts.removeContact(contactId, userId);
+  if (contact) {
+    return res.status(httpCode.OK).json({
+      status: "success",
+      code: httpCode.OK,
+      message: { message: "Contact deleted", contact },
+    });
+  }
+  throw new CustomError(404, "Not found");
+};
+
+const updateContact = async (req, res) => {
+  const { contactId } = req.params;
+  const userId = req.user._id;
+  const contact = await Contacts.updateContact(contactId, req.body, userId);
+  if (contact) {
     return res
-      .status(404)
-      .json({ status: "error", code: 404, message: "Not found" });
-  } catch (err) {
-    next(err);
+      .status(httpCode.OK)
+      .json({ status: "success", code: httpCode.OK, data: { contact } });
   }
+  throw new CustomError(404, "Not found");
 };
 
-const updateContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const contact = await Contact.updateContact(contactId, req.body);
-    if (contact) {
-      return res
-        .status(200)
-        .json({ status: "success", code: 200, message: { contact } });
-    }
+const updateStatusFavoriteContact = async (req, res) => {
+  const { contactId } = req.params;
+  const userId = req.user._id;
+  const contact = await Contacts.updateContact(contactId, req.body, userId);
+  if (contact) {
     return res
-      .status(404)
-      .json({ status: "error", code: 404, message: "Not found" });
-  } catch (err) {
-    next(err);
+      .status(httpCode.OK)
+      .json({ status: "success", code: httpCode.OK, data: { contact } });
   }
-};
-
-const updateStatusFavoriteContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const contact = await Contact.updateContact(contactId, req.body);
-    if (contact) {
-      return res
-        .status(200)
-        .json({ status: "success", code: 200, message: { contact } });
-    }
-    return res
-      .status(404)
-      .json({ status: "error", code: 404, message: "Not found" });
-  } catch (err) {
-    next(err);
-  }
+  throw new CustomError(404, "Not found");
 };
 
 module.exports = {
