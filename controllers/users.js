@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const Users = require("../repository/users");
+const mkdirp = require("mkdirp");
 const { httpCode } = require("../config/constant");
 const { CustomError } = require("../helpers/custom-error");
+const UploadService = require("../services/file-upload");
 require("dotenv").config();
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -25,6 +28,7 @@ const registration = async (req, res, next) => {
         id: newUser.id,
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarUrl: newUser.avatarUrl,
       },
     });
   } catch (err) {
@@ -84,10 +88,28 @@ const updateSubscription = async (req, res, next) => {
   throw new CustomError(404, "Not found");
 };
 
+const uploadAvatar = async (req, res, next) => {
+  const file = req.file;
+  const id = String(req.user._id);
+  const AVATAR_OF_USERS = process.env.AVATAR_OF_USERS;
+  const destination = path.join("public", AVATAR_OF_USERS, id);
+  await mkdirp(destination);
+  const uploadService = new UploadService(destination);
+  const avatarUrl = await uploadService.save(file, id);
+  await Users.updateAvatar(id, avatarUrl);
+
+  return res.status(httpCode.OK).json({
+    status: "success",
+    code: httpCode.OK,
+    data: { avatarUrl },
+  });
+};
+
 module.exports = {
   registration,
   login,
   logout,
   getCurrent,
   updateSubscription,
+  uploadAvatar,
 };
