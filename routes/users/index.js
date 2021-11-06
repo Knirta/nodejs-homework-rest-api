@@ -9,12 +9,15 @@ const {
   logout,
   getCurrent,
   updateSubscription,
+  uploadAvatar,
 } = require("../../controllers/users");
+const upload = require("../../helpers/upload");
 
 router.post("/signup", validateUser, registration);
 router.post("/login", loginLimit, validateUser, login);
 router.post("/logout", guard, logout);
 router.get("/current", guard, getCurrent);
 router.patch("/", guard, validateSubscription, updateSubscription);
+router.patch("/avatars", guard, upload.single("avatar"), uploadAvatar);
 
 module.exports = router;
